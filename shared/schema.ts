@@ -1,18 +1,23 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const versets = pgTable("versets", {
+  id: serial("id").primaryKey(),
+  sourate: integer("sourate").notNull(),
+  verset: integer("verset").notNull(),
+  texte: text("texte").notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
+export const insertVersetSchema = createInsertSchema(versets).omit({ id: true });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type Verset = typeof versets.$inferSelect;
+export type InsertVerset = z.infer<typeof insertVersetSchema>;
+
+// Schema for client-side JSON validation
+export const versetJsonSchema = z.object({
+  sourate: z.number(),
+  verset: z.number(),
+  texte: z.string(),
+});
+export type VersetJson = z.infer<typeof versetJsonSchema>;
