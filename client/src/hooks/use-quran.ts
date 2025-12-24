@@ -36,21 +36,23 @@ export function useQuranSearch(query: string) {
     if (searchTerms.length === 0) return [];
 
     return allVersets.filter((v) => {
-      const verseText = v.texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const verseTextLower = v.texte.toLowerCase();
+      const verseTextNormalized = verseTextLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
       
       return searchTerms.every(term => {
-        const normalizedTerm = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const termLower = term.toLowerCase();
+        const termNormalized = termLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const isNumeric = /^\d+$/.test(term);
         
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
         }
         
-        // Simple inclusive check for both Arabic and French
-        return v.texte.toLowerCase().includes(term.toLowerCase()) || 
-               verseText.includes(normalizedTerm);
+        // Match either raw text (Arabic/French) or normalized text (French without accents)
+        return verseTextLower.includes(termLower) || 
+               verseTextNormalized.includes(termNormalized);
       });
     });
   }, [allVersets, query]);

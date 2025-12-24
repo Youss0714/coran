@@ -28,10 +28,21 @@ export function SearchResultCard({ verset, index }: SearchResultCardProps) {
           </div>
         </CardHeader>
         <CardContent className="px-5 pb-4">
-          <p className="text-lg leading-relaxed text-foreground/90 font-medium">
-            {verset.texte}
-          </p>
-          {/* Optional: If we had Arabic text, we would display it here with font-arabic class */}
+          {verset.texte.includes('|') ? (
+            <div className="space-y-4">
+              <p className="text-2xl leading-loose text-foreground font-arabic text-right dir-rtl" dir="rtl">
+                {verset.texte.split('|')[0].trim()}
+              </p>
+              <div className="h-px bg-border/50 w-full" />
+              <p className="text-base leading-relaxed text-muted-foreground italic">
+                {verset.texte.split('|')[1].trim()}
+              </p>
+            </div>
+          ) : (
+            <p className="text-lg leading-relaxed text-foreground/90 font-medium">
+              {verset.texte}
+            </p>
+          )}
         </CardContent>
       </Card>
     </motion.div>
