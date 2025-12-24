@@ -41,7 +41,7 @@ export default function Home() {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Prêt à rechercher</h3>
             <p className="text-muted-foreground max-w-sm mx-auto">
-              Entrez un mot clé ci-dessus pour explorer les versets du Saint Coran. La recherche est instantanée et fonctionne hors ligne.
+              Le Coran complet (6236 versets) est chargé. Entrez un mot clé ci-dessus pour l'explorer instantanément, même hors ligne.
             </p>
           </motion.div>
         ) : (
