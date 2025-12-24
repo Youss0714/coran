@@ -30,11 +30,23 @@ export function useQuranSearch(query: string) {
   const results = useMemo(() => {
     if (!allVersets || !query.trim()) return [];
     
-    const lowerQuery = query.toLowerCase().trim();
-    
-    return allVersets.filter((verset) => 
-      verset.texte.toLowerCase().includes(lowerQuery)
-    );
+    const normalizedQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const searchTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+    if (searchTerms.length === 0) return [];
+
+    return allVersets.filter((v) => {
+      const verseText = v.texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const sourateStr = v.sourate.toString();
+      const versetStr = v.verset.toString();
+      
+      // All terms must match either the text or surah/verse number
+      return searchTerms.every(term => 
+        verseText.includes(term) ||
+        sourateStr === term ||
+        versetStr === term
+      );
+    });
   }, [allVersets, query]);
 
   return { 
