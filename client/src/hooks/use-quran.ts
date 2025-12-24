@@ -50,7 +50,6 @@ export function useQuranSearch(query: string) {
           return sourateStr === term || versetStr === term;
         }
         
-        // Match either raw text (Arabic/French) or normalized text (French without accents)
         return verseTextLower.includes(termLower) || 
                verseTextNormalized.includes(termNormalized);
       });
