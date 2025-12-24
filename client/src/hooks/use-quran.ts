@@ -40,19 +40,17 @@ export function useQuranSearch(query: string) {
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
       
-      // Try to detect if query contains Arabic characters
-      const isArabic = /[\u0600-\u06FF]/.test(normalizedQuery);
-      
       return searchTerms.every(term => {
+        const normalizedTerm = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const isNumeric = /^\d+$/.test(term);
+        
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
         }
-        // If query is Arabic, match exactly without normalization
-        if (isArabic) {
-          return v.texte.includes(term);
-        }
-        return verseText.includes(term);
+        
+        // Simple inclusive check for both Arabic and French
+        return v.texte.toLowerCase().includes(term.toLowerCase()) || 
+               verseText.includes(normalizedTerm);
       });
     });
   }, [allVersets, query]);
