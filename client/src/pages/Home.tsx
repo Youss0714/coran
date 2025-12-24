@@ -72,6 +72,7 @@ export default function Home() {
                     key={`${verset.sourate}-${verset.verset}`} 
                     verset={verset} 
                     index={idx} 
+                    highlight={activeQuery}
                   />
                 ))}
               </div>
