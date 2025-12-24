@@ -16,8 +16,8 @@ export type InsertVerset = z.infer<typeof insertVersetSchema>;
 
 // Schema for client-side JSON validation
 export const versetJsonSchema = z.object({
-  sourate: z.number(),
-  verset: z.number(),
+  sourate: z.number().or(z.string().transform(v => parseInt(v))),
+  verset: z.number().or(z.string().transform(v => parseInt(v))),
   texte: z.string(),
 });
 export type VersetJson = z.infer<typeof versetJsonSchema>;
