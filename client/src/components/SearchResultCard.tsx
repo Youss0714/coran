@@ -50,7 +50,7 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
     <span className={className}>
       {parts.map((part, i) => (
         part.isHighlighted ? (
-          <mark key={i} className="bg-primary/20 text-primary-foreground font-bold px-0.5 rounded">
+          <mark key={i} className="bg-blue-100 text-blue-700 font-bold px-0.5 rounded dark:bg-blue-900/30 dark:text-blue-300">
             {part.text}
           </mark>
         ) : (
