@@ -28,8 +28,7 @@ export function useQuran() {
 const removeTashkeel = (text: string) => {
   if (!text) return "";
   return text
-    .replace(/[\u064B-\u0652]/g, "") // Main diacritics (Fathah, Dammah, Kasrah, etc.)
-    .replace(/[\u0654-\u0658]/g, "") // Hamza marks
+    .replace(/[\u064B-\u0658]/g, "") // All diacritics including Maddah (U+0653)
     .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
     .replace(/\u0640/g, "") // Kashida/Tatweel
     .replace(/\u0671/g, "\u0627") // Wasla to Alif
