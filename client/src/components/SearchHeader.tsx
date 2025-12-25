@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface SearchHeaderProps {
   query: string;
@@ -20,21 +20,32 @@ export function SearchHeader({ query, setQuery, onSearch, totalVerses }: SearchH
           </p>
         </div>
 
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+        <div className="relative group flex items-center gap-2">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-10 py-3 bg-white border border-input rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+              placeholder="Rechercher un mot, une phrase..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Effacer la recherche"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
-          <input
-            type="text"
-            className="block w-full pl-10 pr-4 py-3 bg-white border border-input rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
-            placeholder="Rechercher un mot, une phrase..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-          />
           <button
             onClick={onSearch}
-            className="absolute right-2 top-1.5 bottom-1.5 px-4 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-primary/20"
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-medium hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all shadow-md shadow-primary/20 whitespace-nowrap"
           >
             Rechercher
           </button>
