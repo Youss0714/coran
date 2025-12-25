@@ -54,31 +54,48 @@ export function useQuranSearch(query: string) {
           .replace(/\u0640/g, ""); // Kashida
       };
 
-      const searchTerms = query.trim().split(/\s+/).filter(Boolean);
+      const queryRaw = query.trim();
+      const queryLower = queryRaw.toLowerCase();
+      const queryPlain = removeTashkeel(queryLower);
+      const searchTerms = queryRaw.split(/\s+/).filter(Boolean);
+      
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
+
+      const arabicPlain = removeTashkeel(arabicText);
+      const frenchLower = frenchText.toLowerCase();
+      const frenchNormalized = frenchLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const surahLower = surahName.toLowerCase();
+      const surahNormalized = surahLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      // PHRASE MATCH (Priority)
+      if (queryRaw.includes(" ")) {
+        const isPhraseMatch = 
+          arabicText.includes(queryRaw) || 
+          arabicPlain.includes(queryPlain) ||
+          frenchLower.includes(queryLower) ||
+          frenchNormalized.includes(queryLower.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+        
+        if (isPhraseMatch) return true;
+      }
       
+      // KEYWORD MATCH (Every word must be present)
       return searchTerms.every(term => {
         const isNumeric = /^\d+$/.test(term);
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
         }
 
-        // Normalize term and texts for comparison
         const termLower = term.toLowerCase();
-        const termNormalized = termLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const termArabicPlain = removeTashkeel(termLower);
-
-        const arabicPlain = removeTashkeel(arabicText);
-        const frenchNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const surahNormalized = surahName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const termPlain = removeTashkeel(termLower);
+        const termNorm = termLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
         return arabicText.includes(term) || 
-               arabicPlain.includes(termArabicPlain) ||
-               frenchText.toLowerCase().includes(termLower) ||
-               frenchNormalized.includes(termNormalized) ||
-               surahName.toLowerCase().includes(termLower) ||
-               surahNormalized.includes(termNormalized);
+               arabicPlain.includes(termPlain) ||
+               frenchLower.includes(termLower) ||
+               frenchNormalized.includes(termNorm) ||
+               surahLower.includes(termLower) ||
+               surahNormalized.includes(termNorm);
       });
     });
   }, [allVersets, query]);
