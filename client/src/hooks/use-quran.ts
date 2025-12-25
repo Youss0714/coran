@@ -75,6 +75,8 @@ export function useQuranSearch(query: string) {
       // unless it's Surah 1. Users expect "بسم الله" to find 114 surahs.
       if (queryPlain === "بسم الله" || queryPlain === "بسم الله الرحمن الرحيم") {
         if (v.verset === 1) return true;
+        // Skip further matching for verse 1 to avoid double counting if phrase is also in text
+        return false; 
       }
 
       // PHRASE MATCH (Priority)
