@@ -1,17 +1,25 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuranSearch } from "@/hooks/use-quran";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SearchResultCard } from "@/components/SearchResultCard";
-import { Loader2, AlertCircle, BookOpenCheck, ListFilter } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2, AlertCircle, BookOpenCheck, ListFilter, BookOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
+  const [showSplash, setShowSplash] = useState(true);
   
   const { results, count, isLoading, totalVerses } = useQuranSearch(activeQuery);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const surahStats = useMemo(() => {
     if (!results.length) return [];
@@ -30,6 +38,60 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <AnimatePresence>
+        {showSplash && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ 
+                duration: 0.8, 
+                ease: "easeOut",
+                repeat: Infinity,
+                repeatType: "reverse",
+                repeatDelay: 0.2
+              }}
+              className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary shadow-lg shadow-primary/5"
+            >
+              <BookOpen className="w-12 h-12" />
+            </motion.div>
+            <motion.h1 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-3xl font-bold text-foreground tracking-tight"
+            >
+              Al-Quran
+            </motion.h1>
+            <motion.p
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="text-muted-foreground mt-2 text-center"
+            >
+              Explorez la Sagesse Eternelle
+            </motion.p>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: 120 }}
+              transition={{ delay: 0.8, duration: 1.2, ease: "easeInOut" }}
+              className="h-1 bg-primary/20 rounded-full mt-8 overflow-hidden"
+            >
+              <motion.div 
+                animate={{ x: [-120, 120] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                className="h-full w-full bg-primary"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <SearchHeader 
         query={searchInput} 
         setQuery={setSearchInput} 
