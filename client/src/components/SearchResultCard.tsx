@@ -17,12 +17,14 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
   // Split by multiple terms if necessary
   const removeTashkeel = (t: string) => {
     return t
-      .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "")
-      .replace(/\u0671/g, "\u0627")
-      .replace(/[\u0622\u0623\u0625]/g, "\u0627")
-      .replace(/\u0629/g, "\u0647")
-      .replace(/\u0649/g, "\u064A")
-      .replace(/\u0640/g, "");
+      .replace(/[\u064B-\u0652]/g, "") // Main diacritics
+      .replace(/[\u0654-\u0658]/g, "") // Hamza marks
+      .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
+      .replace(/\u0640/g, "") // Kashida/Tatweel
+      .replace(/\u0671/g, "\u0627") // Wasla to Alif
+      .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
+      .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
+      .replace(/\u0649/g, "\u064A"); // Alif Maksura to Ya
   };
 
   const terms = highlight.toLowerCase().split(/\s+/).filter(Boolean);

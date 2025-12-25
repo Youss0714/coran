@@ -46,12 +46,14 @@ export function useQuranSearch(query: string) {
       const removeTashkeel = (text: string) => {
         if (!text) return "";
         return text
-          .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // Diacritics
+          .replace(/[\u064B-\u0652]/g, "") // Main diacritics (Fathah, Dammah, Kasrah, etc.)
+          .replace(/[\u0654-\u0658]/g, "") // Hamza marks
+          .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
+          .replace(/\u0640/g, "") // Kashida/Tatweel
           .replace(/\u0671/g, "\u0627") // Wasla to Alif
           .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
           .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
           .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
-          .replace(/\u0640/g, "") // Kashida
           .replace(/\s+/g, " ") // Normalize spaces
           .trim();
       };
