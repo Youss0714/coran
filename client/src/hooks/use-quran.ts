@@ -44,7 +44,14 @@ export function useQuranSearch(query: string) {
 
       // Function to remove Arabic diacritics (tashkeel)
       const removeTashkeel = (text: string) => {
-        return text.replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "");
+        if (!text) return "";
+        return text
+          .replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "") // Diacritics
+          .replace(/\u0671/g, "\u0627") // Wasla to Alif
+          .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
+          .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
+          .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
+          .replace(/\u0640/g, ""); // Kashida
       };
 
       const searchTerms = query.trim().split(/\s+/).filter(Boolean);
@@ -58,16 +65,19 @@ export function useQuranSearch(query: string) {
         }
 
         // Normalize term and texts for comparison
-        const termNormalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const termArabicPlain = removeTashkeel(term).replace(/آ|إ|أ/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+        const termLower = term.toLowerCase();
+        const termNormalized = termLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const termArabicPlain = removeTashkeel(termLower);
 
-        const arabicPlain = removeTashkeel(arabicText).replace(/آ|إ|أ/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+        const arabicPlain = removeTashkeel(arabicText);
         const frenchNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const surahNormalized = surahName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
         return arabicText.includes(term) || 
                arabicPlain.includes(termArabicPlain) ||
+               frenchText.toLowerCase().includes(termLower) ||
                frenchNormalized.includes(termNormalized) ||
+               surahName.toLowerCase().includes(termLower) ||
                surahNormalized.includes(termNormalized);
       });
     });
