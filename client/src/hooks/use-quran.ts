@@ -24,6 +24,22 @@ export function useQuran() {
   return { allVersets, isLoading, error };
 }
 
+// Helper function to remove Arabic diacritics (tashkeel)
+const removeTashkeel = (text: string) => {
+  if (!text) return "";
+  return text
+    .replace(/[\u064B-\u0652]/g, "") // Main diacritics (Fathah, Dammah, Kasrah, etc.)
+    .replace(/[\u0654-\u0658]/g, "") // Hamza marks
+    .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
+    .replace(/\u0640/g, "") // Kashida/Tatweel
+    .replace(/\u0671/g, "\u0627") // Wasla to Alif
+    .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
+    .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
+    .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
+    .replace(/\s+/g, " ") // Normalize spaces
+    .trim();
+};
+
 export function useQuranSearch(query: string) {
   const { allVersets, isLoading } = useQuran();
 
@@ -42,22 +58,6 @@ export function useQuranSearch(query: string) {
       const frenchText = parts[1] || "";
       const surahName = parts[2] || "";
 
-      // Function to remove Arabic diacritics (tashkeel)
-      const removeTashkeel = (text: string) => {
-        if (!text) return "";
-        return text
-          .replace(/[\u064B-\u0652]/g, "") // Main diacritics (Fathah, Dammah, Kasrah, etc.)
-          .replace(/[\u0654-\u0658]/g, "") // Hamza marks
-          .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
-          .replace(/\u0640/g, "") // Kashida/Tatweel
-          .replace(/\u0671/g, "\u0627") // Wasla to Alif
-          .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
-          .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
-          .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
-          .replace(/\s+/g, " ") // Normalize spaces
-          .trim();
-      };
-
       const queryRaw = query.trim();
       const queryLower = queryRaw.toLowerCase();
       const queryPlain = removeTashkeel(queryLower);
@@ -72,13 +72,10 @@ export function useQuranSearch(query: string) {
       const surahLower = surahName.toLowerCase();
       const surahNormalized = surahLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-      // BASMALA SPECIAL CASE: 
-      // Most surahs (except Surah 9) start with Basmala, but it's often not in the text of verse 1
-      // unless it's Surah 1. Users expect "بسم الله" to find 114 surahs.
+      // BASMALA SPECIAL CASE
       if (queryPlain === "بسم الله" || queryPlain === "بسم الله الرحمن الرحيم") {
         if (v.verset === 1) return true;
-        // Skip further matching for verse 1 to avoid double counting if phrase is also in text
-        if (v.verset === 1) return false; 
+        if (v.verset === 1) return false;
       }
 
       // PHRASE MATCH (Priority)
@@ -113,9 +110,32 @@ export function useQuranSearch(query: string) {
     });
   }, [allVersets, query]);
 
+  // Count total occurrences by counting matches in each result verse
+  const count = useMemo(() => {
+    if (!results || results.length === 0 || !query.trim()) return 0;
+    
+    const queryLower = query.trim().toLowerCase();
+    const queryPlain = removeTashkeel(queryLower);
+    
+    return results.reduce((total, v) => {
+      const parts = v.texte.split('|').map(s => s.trim());
+      const arabicText = parts[0] || "";
+      const frenchText = parts[1] || "";
+      
+      const arabicPlain = removeTashkeel(arabicText);
+      const frenchLower = frenchText.toLowerCase();
+      
+      // Count matches in Arabic and French
+      const arabicMatches = (arabicPlain.match(new RegExp(queryPlain, 'g')) || []).length;
+      const frenchMatches = (frenchLower.match(new RegExp(queryLower, 'g')) || []).length;
+      
+      return total + arabicMatches + frenchMatches;
+    }, 0);
+  }, [results, query]);
+
   return { 
     results, 
-    count: results.length, 
+    count, 
     isLoading,
     totalVerses: allVersets?.length || 0
   };
