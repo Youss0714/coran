@@ -43,27 +43,26 @@ const removeTashkeel = (text: string) => {
 export function useQuranSearch(query: string) {
   const { allVersets, isLoading } = useQuran();
 
-  const { results, count } = useMemo(() => {
-    if (!allVersets || !query.trim()) return { results: [], count: 0 };
+  const results = useMemo(() => {
+    if (!allVersets || !query.trim()) return [];
     
     const normalizedQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const searchTerms = normalizedQuery.split(/\s+/).filter(Boolean);
 
-    if (searchTerms.length === 0) return { results: [], count: 0 };
+    if (searchTerms.length === 0) return [];
 
-    const queryRaw = query.trim();
-    const queryLower = queryRaw.toLowerCase();
-    const queryPlain = removeTashkeel(queryLower);
-    
-    let totalCount = 0;
-
-    const filteredResults = allVersets.filter((v) => {
+    return allVersets.filter((v) => {
       // Split text into Arabic, French, and Surah Name
       const parts = v.texte.split('|').map(s => s.trim());
       const arabicText = parts[0] || "";
       const frenchText = parts[1] || "";
       const surahName = parts[2] || "";
 
+      const queryRaw = query.trim();
+      const queryLower = queryRaw.toLowerCase();
+      const queryPlain = removeTashkeel(queryLower);
+      const searchTerms = queryRaw.split(/\s+/).filter(Boolean);
+      
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
 
@@ -76,7 +75,6 @@ export function useQuranSearch(query: string) {
       // BASMALA SPECIAL CASE
       if (queryPlain === "بسم الله" || queryPlain === "بسم الله الرحمن الرحيم") {
         if (v.verset === 1) return true;
-        if (v.verset === 1) return false;
       }
 
       // PHRASE MATCH (Priority)
@@ -87,17 +85,11 @@ export function useQuranSearch(query: string) {
           frenchLower.includes(queryLower) ||
           frenchNormalized.includes(queryLower.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
         
-        if (isPhraseMatch) {
-          const arabicMatches = (arabicPlain.match(new RegExp(queryPlain, 'g')) || []).length;
-          const frenchMatches = (frenchLower.match(new RegExp(queryLower, 'g')) || []).length;
-          totalCount += arabicMatches + frenchMatches;
-          return true;
-        }
-        return false;
+        if (isPhraseMatch) return true;
       }
       
       // KEYWORD MATCH (Every word must be present)
-      const isMatch = searchTerms.every(term => {
+      return searchTerms.every(term => {
         const isNumeric = /^\d+$/.test(term);
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
@@ -114,18 +106,31 @@ export function useQuranSearch(query: string) {
                surahLower.includes(termLower) ||
                surahNormalized.includes(termNorm);
       });
-
-      if (isMatch) {
-        const arabicMatches = (arabicPlain.match(new RegExp(queryPlain, 'g')) || []).length;
-        const frenchMatches = (frenchLower.match(new RegExp(queryLower, 'g')) || []).length;
-        totalCount += arabicMatches + frenchMatches;
-      }
-
-      return isMatch;
     });
-
-    return { results: filteredResults, count: totalCount };
   }, [allVersets, query]);
+
+  // Count total occurrences in the filtered results
+  const count = useMemo(() => {
+    if (!results || results.length === 0 || !query.trim()) return 0;
+    
+    const queryLower = query.trim().toLowerCase();
+    const queryPlain = removeTashkeel(queryLower);
+    
+    return results.reduce((total, v) => {
+      const parts = v.texte.split('|').map(s => s.trim());
+      const arabicText = parts[0] || "";
+      const frenchText = parts[1] || "";
+      
+      const arabicPlain = removeTashkeel(arabicText);
+      const frenchLower = frenchText.toLowerCase();
+      
+      // Count all matches in both Arabic and French text
+      const arabicMatches = (arabicPlain.match(new RegExp(queryPlain, 'g')) || []).length;
+      const frenchMatches = (frenchLower.match(new RegExp(queryLower, 'g')) || []).length;
+      
+      return total + arabicMatches + frenchMatches;
+    }, 0);
+  }, [results, query]);
 
   return { 
     results, 
