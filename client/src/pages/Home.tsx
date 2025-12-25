@@ -85,7 +85,7 @@ export default function Home() {
                       variant="outline" 
                       className="bg-white border-blue-100 text-blue-700 hover:bg-blue-50 transition-colors py-1.5 px-3"
                     >
-                      Sourate {stat.id} : <span className="font-bold ml-1">{stat.count} verset{stat.count > 1 ? 's' : ''}</span>
+                      Sourate {stat.id} : <span className="font-bold ml-1">{stat.count} occurrence{stat.count > 1 ? 's' : ''}</span>
                     </Badge>
                   ))}
                 </div>
