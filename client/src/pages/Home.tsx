@@ -35,7 +35,7 @@ export default function Home() {
   const { results, count, isLoading, totalVerses } = useQuranSearch(activeQuery);
 
   const surahStats = useMemo(() => {
-    if (!results.length) return [];
+    if (!results || !results.length) return [];
     const stats: Record<number, number> = {};
     results.forEach(v => {
       stats[v.sourate] = (stats[v.sourate] || 0) + 1;
