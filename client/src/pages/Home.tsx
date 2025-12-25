@@ -32,6 +32,23 @@ export default function Home() {
       .sort((a, b) => a.id - b.id);
   }, [results]);
 
+  const scrollToSurah = (surahId: number) => {
+    const firstVerseOfSurah = results.find(v => v.sourate === surahId);
+    if (firstVerseOfSurah) {
+      const element = document.getElementById(`verset-${firstVerseOfSurah.sourate}-${firstVerseOfSurah.verset}`);
+      if (element) {
+        const headerOffset = 180;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }
+  };
+
   const handleSearch = () => {
     setActiveQuery(searchInput);
   };
@@ -145,7 +162,8 @@ export default function Home() {
                     <Badge 
                       key={stat.id} 
                       variant="outline" 
-                      className="bg-white border-blue-100 text-blue-700 hover:bg-blue-50 transition-colors py-1.5 px-3"
+                      onClick={() => scrollToSurah(stat.id)}
+                      className="bg-white border-blue-100 text-blue-700 hover:bg-blue-50 transition-colors py-1.5 px-3 cursor-pointer active:scale-95"
                     >
                       Sourate {stat.id} : <span className="font-bold ml-1">{stat.count} occurrence{stat.count > 1 ? 's' : ''}</span>
                     </Badge>
