@@ -147,31 +147,6 @@ export default function Home() {
               </span>
             </div>
 
-            {count > 0 && surahStats.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <ListFilter className="w-4 h-4" />
-                  Répartition par sourate
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {surahStats.map(stat => (
-                    <Badge 
-                      key={stat.id} 
-                      variant="outline" 
-                      onClick={() => scrollToSurah(stat.id)}
-                      className="bg-white border-blue-100 text-blue-700 hover:bg-blue-50 transition-colors py-1.5 px-3 cursor-pointer active:scale-95"
-                    >
-                      Sourate {stat.id} : <span className="font-bold ml-1">{stat.count} occurrence{stat.count > 1 ? 's' : ''}</span>
-                    </Badge>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
             {count === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-border">
                 <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-3 text-destructive">
