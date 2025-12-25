@@ -36,8 +36,15 @@ export function useQuranSearch(query: string) {
     if (searchTerms.length === 0) return [];
 
     return allVersets.filter((v) => {
-      const verseTextLower = v.texte.toLowerCase();
-      const verseTextNormalized = verseTextLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      // Split text into Arabic, French, and Surah Name
+      const parts = v.texte.split('|').map(s => s.trim());
+      const arabicText = parts[0] || "";
+      const frenchText = parts[1] || "";
+      const surahName = parts[2] || "";
+
+      const normalizedQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const searchTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
       
@@ -49,9 +56,16 @@ export function useQuranSearch(query: string) {
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
         }
+
+        // Search in Arabic text (original), French text (normalized), and Surah Name
+        const arabicTextNormalized = arabicText.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const frenchTextNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const surahNameNormalized = surahName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
-        return verseTextLower.includes(termLower) || 
-               verseTextNormalized.includes(termNormalized);
+        return arabicText.includes(term) || 
+               arabicTextNormalized.includes(termNormalized) ||
+               frenchTextNormalized.includes(termNormalized) ||
+               surahNameNormalized.includes(termNormalized);
       });
     });
   }, [allVersets, query]);
