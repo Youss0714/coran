@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuranSearch } from "@/hooks/use-quran";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SearchResultCard } from "@/components/SearchResultCard";
-import { Loader2, AlertCircle, BookOpenCheck } from "lucide-react";
+import { Loader2, AlertCircle, BookOpenCheck, ListFilter } from "lucide-react";
 import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   
   const { results, count, isLoading, totalVerses } = useQuranSearch(activeQuery);
+
+  const surahStats = useMemo(() => {
+    if (!results.length) return [];
+    const stats: Record<number, number> = {};
+    results.forEach(v => {
+      stats[v.sourate] = (stats[v.sourate] || 0) + 1;
+    });
+    return Object.entries(stats)
+      .map(([id, count]) => ({ id: parseInt(id), count }))
+      .sort((a, b) => a.id - b.id);
+  }, [results]);
 
   const handleSearch = () => {
     setActiveQuery(searchInput);
@@ -54,6 +67,30 @@ export default function Home() {
                 {count} {count === 1 ? 'occurrence trouvée' : 'occurrences trouvées'}
               </span>
             </div>
+
+            {count > 0 && surahStats.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <ListFilter className="w-4 h-4" />
+                  Répartition par sourate
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {surahStats.map(stat => (
+                    <Badge 
+                      key={stat.id} 
+                      variant="outline" 
+                      className="bg-white border-blue-100 text-blue-700 hover:bg-blue-50 transition-colors py-1.5 px-3"
+                    >
+                      Sourate {stat.id} : <span className="font-bold ml-1">{stat.count}</span>
+                    </Badge>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {count === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-border">
