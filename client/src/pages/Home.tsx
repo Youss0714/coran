@@ -183,15 +183,24 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {results.map((verset, idx) => (
-                  <SearchResultCard 
-                    key={`${verset.sourate}-${verset.verset}`} 
-                    verset={verset} 
-                    index={idx} 
-                    highlight={activeQuery}
-                  />
-                ))}
+              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                <div className="grid grid-cols-[80px_100px_40px_1fr_80px] bg-muted/50 border-b border-border text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+                  <div className="p-3 border-r border-border text-center">Num</div>
+                  <div className="p-3 border-r border-border text-center">Sourat</div>
+                  <div className="p-3 border-r border-border text-center">Verset</div>
+                  <div className="p-3 border-r border-border text-center">Texte</div>
+                  <div className="p-3 text-center">Nombre mot</div>
+                </div>
+                <div className="divide-y divide-border">
+                  {results.map((verset, idx) => (
+                    <SearchResultCard 
+                      key={`${verset.sourate}-${verset.verset}`} 
+                      verset={verset} 
+                      index={idx} 
+                      highlight={activeQuery}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

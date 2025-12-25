@@ -62,43 +62,41 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
 }
 
 export function SearchResultCard({ verset, index, highlight }: SearchResultCardProps) {
+  const [ar, fr] = verset.texte.includes('|') 
+    ? verset.texte.split('|').map(s => s.trim()) 
+    : [verset.texte, ""];
+
   return (
     <motion.div
       id={`verset-${verset.sourate}-${verset.verset}`}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.2, delay: index * 0.03 }}
     >
-      <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-300 bg-white group">
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary transition-colors" />
-        <CardHeader className="pb-2 pt-4 px-5">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
-              <span className="p-1.5 rounded-full bg-primary/10 text-primary">
-                <BookOpen className="w-3 h-3" />
-              </span>
-              Sourate {verset.sourate}, Verset {verset.verset}
-            </CardTitle>
+      <div className="grid grid-cols-[80px_100px_40px_1fr_80px] border-b border-border hover:bg-muted/50 transition-colors items-stretch text-sm min-h-[60px]">
+        <div className="p-3 border-r border-border flex items-center justify-center font-medium">
+          {verset.sourate}
+        </div>
+        <div className="p-3 border-r border-border flex items-center justify-center text-center font-arabic" dir="rtl">
+          سورة {verset.sourate}
+        </div>
+        <div className="p-3 border-r border-border flex items-center justify-center font-medium">
+          {verset.verset}
+        </div>
+        <div className="p-3 border-r border-border flex flex-col justify-center gap-2">
+          <div className="font-arabic text-lg text-right leading-relaxed" dir="rtl">
+            <HighlightedText text={ar} highlight={highlight} />
           </div>
-        </CardHeader>
-        <CardContent className="px-5 pb-4">
-          {verset.texte.includes('|') ? (
-            <div className="space-y-4">
-              <div className="text-2xl leading-loose text-foreground font-arabic text-right dir-rtl" dir="rtl">
-                <HighlightedText text={verset.texte.split('|')[0].trim()} highlight={highlight} />
-              </div>
-              <div className="h-px bg-border/50 w-full" />
-              <div className="text-base leading-relaxed text-muted-foreground italic">
-                <HighlightedText text={verset.texte.split('|')[1].trim()} highlight={highlight} />
-              </div>
-            </div>
-          ) : (
-            <div className="text-lg leading-relaxed text-foreground/90 font-medium">
-              <HighlightedText text={verset.texte} highlight={highlight} />
+          {fr && (
+            <div className="text-muted-foreground italic text-xs leading-normal">
+              <HighlightedText text={fr} highlight={highlight} />
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+        <div className="p-3 flex items-center justify-center font-bold text-blue-600">
+          1
+        </div>
+      </div>
     </motion.div>
   );
 }
