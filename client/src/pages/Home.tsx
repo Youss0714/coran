@@ -183,15 +183,15 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
-                <div className="grid grid-cols-[80px_100px_40px_1fr_80px] bg-muted/50 border-b border-border text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
+              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm flex flex-col h-[600px]">
+                <div className="grid grid-cols-[80px_100px_40px_1fr_80px] bg-muted/50 border-b border-border text-[10px] uppercase tracking-wider font-bold text-muted-foreground sticky top-0 z-10">
                   <div className="p-3 border-r border-border text-center">Num</div>
                   <div className="p-3 border-r border-border text-center">Sourat</div>
                   <div className="p-3 border-r border-border text-center">Verset</div>
                   <div className="p-3 border-r border-border text-center">Texte</div>
                   <div className="p-3 text-center">Nombre mot</div>
                 </div>
-                <div className="divide-y divide-border">
+                <div className="overflow-y-auto flex-1 divide-y divide-border">
                   {results.map((verset, idx) => (
                     <SearchResultCard 
                       key={`${verset.sourate}-${verset.verset}`} 
