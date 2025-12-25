@@ -59,9 +59,9 @@ export function useQuranSearch(query: string) {
 
         // Normalize term and texts for comparison
         const termNormalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const termArabicPlain = removeTashkeel(term);
+        const termArabicPlain = removeTashkeel(term).replace(/آ|إ|أ/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
 
-        const arabicPlain = removeTashkeel(arabicText);
+        const arabicPlain = removeTashkeel(arabicText).replace(/آ|إ|أ/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
         const frenchNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const surahNormalized = surahName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
