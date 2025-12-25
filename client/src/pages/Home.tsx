@@ -1,18 +1,29 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuranSearch } from "@/hooks/use-quran";
 import { SearchHeader } from "@/components/SearchHeader";
 import { SearchResultCard } from "@/components/SearchResultCard";
-import { Loader2, AlertCircle, BookOpenCheck, ListFilter, BookOpen } from "lucide-react";
+import { Loader2, AlertCircle, BookOpenCheck, BookOpen, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [showSplash, setShowSplash] = useState(true);
-  
-  const { results, count, isLoading, totalVerses } = useQuranSearch(activeQuery);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToTop = () => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ 
+        top: scrollContainerRef.current.scrollHeight, 
+        behavior: 'smooth' 
+      });
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -20,6 +31,8 @@ export default function Home() {
     }, 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  const { results, count, isLoading, totalVerses } = useQuranSearch(activeQuery);
 
   const surahStats = useMemo(() => {
     if (!results.length) return [];
@@ -158,15 +171,43 @@ export default function Home() {
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm flex flex-col h-[600px]">
-                <div className="grid grid-cols-[80px_100px_40px_1fr_80px] bg-muted/50 border-b border-border text-[10px] uppercase tracking-wider font-bold text-muted-foreground sticky top-0 z-10">
+              <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm flex flex-col h-[600px] relative group">
+                <div className="grid grid-cols-[80px_100px_40px_1fr_80px] bg-muted/50 border-b border-border text-[10px] uppercase tracking-wider font-bold text-muted-foreground sticky top-0 z-20">
                   <div className="p-3 border-r border-border text-center">Num</div>
                   <div className="p-3 border-r border-border text-center">Sourat</div>
                   <div className="p-3 border-r border-border text-center">Verset</div>
                   <div className="p-3 border-r border-border text-center">Texte</div>
                   <div className="p-3 text-center">Nombre mot</div>
                 </div>
-                <div className="overflow-y-auto flex-1 divide-y divide-border">
+                
+                {/* Scroll Navigation Buttons */}
+                <div className="absolute right-6 bottom-6 flex flex-col gap-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button 
+                    size="icon" 
+                    variant="secondary" 
+                    onClick={scrollToTop}
+                    className="rounded-full shadow-lg border border-border bg-white/80 backdrop-blur-sm hover:bg-white"
+                    title="Aller au début"
+                    data-testid="button-scroll-top"
+                  >
+                    <ChevronUp className="h-5 w-5" />
+                  </Button>
+                  <Button 
+                    size="icon" 
+                    variant="secondary" 
+                    onClick={scrollToBottom}
+                    className="rounded-full shadow-lg border border-border bg-white/80 backdrop-blur-sm hover:bg-white"
+                    title="Aller à la fin"
+                    data-testid="button-scroll-bottom"
+                  >
+                    <ChevronDown className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <div 
+                  ref={scrollContainerRef}
+                  className="overflow-y-auto flex-1 divide-y divide-border scroll-smooth"
+                >
                   {results.map((verset, idx) => (
                     <SearchResultCard 
                       key={`${verset.sourate}-${verset.verset}`} 
