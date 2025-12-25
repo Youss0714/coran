@@ -14,47 +14,58 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
     return <span className={className}>{text}</span>;
   }
 
-  // Split by multiple terms if necessary
+  // Normalized diacritics removal to match use-quran.ts
   const removeTashkeel = (t: string) => {
     return t
-      .replace(/[\u064B-\u0652]/g, "") // Main diacritics
-      .replace(/[\u0654-\u0658]/g, "") // Hamza marks
+      .replace(/[\u064B-\u0658]/g, "") // All diacritics including Maddah
       .replace(/[\u0670\u06D6-\u06ED]/g, "") // Alif Khanjariyah and Quranic signs
       .replace(/\u0640/g, "") // Kashida/Tatweel
       .replace(/\u0671/g, "\u0627") // Wasla to Alif
       .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
       .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
-      .replace(/\u0649/g, "\u064A"); // Alif Maksura to Ya
+      .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
+      .replace(/\s+/g, " ")
+      .trim();
   };
 
-  const terms = highlight.toLowerCase().split(/\s+/).filter(Boolean);
+  const queryRaw = highlight.trim();
+  const queryLower = queryRaw.toLowerCase();
+  const queryPlain = removeTashkeel(queryLower);
+  const terms = queryRaw.split(/\s+/).filter(Boolean);
+  
   if (terms.length === 0) return <span className={className}>{text}</span>;
 
-  // PHRASE MATCH PRIORITY: If the query has spaces, try highlighting the whole phrase first
-  const queryPlain = removeTashkeel(highlight.toLowerCase());
   const textPlain = removeTashkeel(text.toLowerCase());
-  
-  const parts: { text: string, isHighlighted: boolean }[] = [{ text, isHighlighted: false }];
+  const parts: { text: string, isHighlighted: boolean, originalIndex: number }[] = [];
+  let lastIndex = 0;
 
-  // 1. Try exact phrase match if spaces exist
-  if (highlight.trim().includes(" ")) {
-    const fullIndex = textPlain.indexOf(queryPlain);
-    if (fullIndex !== -1) {
-      const match = text.substring(fullIndex, fullIndex + highlight.trim().length);
-      // Simple replace for the first part
-      const before = text.substring(0, fullIndex);
-      const after = text.substring(fullIndex + highlight.trim().length);
-      const phraseParts = [];
-      if (before) phraseParts.push({ text: before, isHighlighted: false });
-      phraseParts.push({ text: match, isHighlighted: true });
-      if (after) phraseParts.push({ text: after, isHighlighted: false });
-      parts.splice(0, 1, ...phraseParts);
-      // If we matched the phrase, we don't necessarily need to match individual words inside it
+  // PHRASE MATCH PRIORITY: If the query has spaces, try highlighting the whole phrase first
+  if (queryRaw.includes(" ")) {
+    let searchIndex = 0;
+    const regex = new RegExp(queryPlain.split(/\s+/).join("[\\s]*"), "g");
+    let match;
+    
+    while ((match = regex.exec(textPlain)) !== null) {
+      const matchStart = match.index;
+      const matchLength = match[0].length;
+      
+      if (lastIndex < matchStart) {
+        parts.push({ text: text.substring(lastIndex, matchStart), isHighlighted: false, originalIndex: lastIndex });
+      }
+      parts.push({ text: text.substring(matchStart, matchStart + matchLength), isHighlighted: true, originalIndex: matchStart });
+      lastIndex = matchStart + matchLength;
+    }
+    
+    if (lastIndex < text.length) {
+      parts.push({ text: text.substring(lastIndex), isHighlighted: false, originalIndex: lastIndex });
+    }
+    
+    if (parts.length > 1) {
       return (
         <span className={className}>
           {parts.map((part, i) => (
             part.isHighlighted ? (
-              <mark key={i} className="bg-blue-100 text-blue-700 font-bold px-0.5 rounded dark:bg-blue-900/30 dark:text-blue-300">
+              <mark key={i} className="bg-yellow-200 text-yellow-900 font-bold px-1 rounded dark:bg-yellow-900/50 dark:text-yellow-200">
                 {part.text}
               </mark>
             ) : (
@@ -66,36 +77,51 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
     }
   }
 
-  // 2. Individual word matching (existing logic)
+  // 2. Individual word matching for Arabic text
+  const finalParts: { text: string, isHighlighted: boolean }[] = [{ text, isHighlighted: false }];
+  
   terms.forEach(term => {
-    for (let i = 0; i < parts.length; i++) {
-      if (parts[i].isHighlighted) continue;
+    const termPlain = removeTashkeel(term.toLowerCase());
+    
+    for (let i = 0; i < finalParts.length; i++) {
+      if (finalParts[i].isHighlighted) continue;
 
-      const currentText = parts[i].text;
-      const normalizedCurrent = currentText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const index = normalizedCurrent.indexOf(term);
+      const currentText = finalParts[i].text;
+      const currentPlain = removeTashkeel(currentText.toLowerCase());
+      
+      // Find all occurrences of the term in this part
+      const regex = new RegExp(termPlain, "g");
+      let match;
+      const subParts: { text: string, isHighlighted: boolean }[] = [];
+      let lastPos = 0;
 
-      if (index !== -1) {
-        const before = currentText.substring(0, index);
-        const match = currentText.substring(index, index + term.length);
-        const after = currentText.substring(index + term.length);
+      while ((match = regex.exec(currentPlain)) !== null) {
+        const matchStart = match.index;
+        const matchLength = match[0].length;
+        
+        if (lastPos < matchStart) {
+          subParts.push({ text: currentText.substring(lastPos, matchStart), isHighlighted: false });
+        }
+        subParts.push({ text: currentText.substring(matchStart, matchStart + matchLength), isHighlighted: true });
+        lastPos = matchStart + matchLength;
+      }
+      
+      if (lastPos < currentText.length) {
+        subParts.push({ text: currentText.substring(lastPos), isHighlighted: false });
+      }
 
-        const newParts = [];
-        if (before) newParts.push({ text: before, isHighlighted: false });
-        newParts.push({ text: match, isHighlighted: true });
-        if (after) newParts.push({ text: after, isHighlighted: false });
-
-        parts.splice(i, 1, ...newParts);
-        i += newParts.length - 1;
+      if (subParts.length > 1) {
+        finalParts.splice(i, 1, ...subParts);
+        i += subParts.length - 1;
       }
     }
   });
 
   return (
     <span className={className}>
-      {parts.map((part, i) => (
+      {finalParts.map((part, i) => (
         part.isHighlighted ? (
-          <mark key={i} className="bg-blue-100 text-blue-700 font-bold px-0.5 rounded dark:bg-blue-900/30 dark:text-blue-300">
+          <mark key={i} className="bg-yellow-200 text-yellow-900 font-bold px-1 rounded dark:bg-yellow-900/50 dark:text-yellow-200">
             {part.text}
           </mark>
         ) : (
