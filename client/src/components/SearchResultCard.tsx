@@ -62,9 +62,10 @@ function HighlightedText({ text, highlight, className }: { text: string, highlig
 }
 
 export function SearchResultCard({ verset, index, highlight }: SearchResultCardProps) {
-  const [ar, fr] = verset.texte.includes('|') 
-    ? verset.texte.split('|').map(s => s.trim()) 
-    : [verset.texte, ""];
+  const parts = verset.texte.split('|').map(s => s.trim());
+  const ar = parts[0] || "";
+  const fr = parts[1] || "";
+  const surahName = parts[2] || `سورة ${verset.sourate}`;
 
   return (
     <motion.div
@@ -77,8 +78,8 @@ export function SearchResultCard({ verset, index, highlight }: SearchResultCardP
         <div className="p-3 border-r border-border flex items-center justify-center font-medium">
           {verset.sourate}
         </div>
-        <div className="p-3 border-r border-border flex items-center justify-center text-center font-arabic" dir="rtl">
-          سورة {verset.sourate}
+        <div className="p-3 border-r border-border flex items-center justify-center text-center font-arabic text-lg" dir="rtl">
+          {surahName}
         </div>
         <div className="p-3 border-r border-border flex items-center justify-center font-medium">
           {verset.verset}
