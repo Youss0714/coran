@@ -51,7 +51,9 @@ export function useQuranSearch(query: string) {
           .replace(/[\u0622\u0623\u0625]/g, "\u0627") // Alif Mad/Hamza to Alif
           .replace(/\u0629/g, "\u0647") // Ta Marbuta to Ha
           .replace(/\u0649/g, "\u064A") // Alif Maksura to Ya
-          .replace(/\u0640/g, ""); // Kashida
+          .replace(/\u0640/g, "") // Kashida
+          .replace(/\s+/g, " ") // Normalize spaces
+          .trim();
       };
 
       const queryRaw = query.trim();
@@ -67,6 +69,13 @@ export function useQuranSearch(query: string) {
       const frenchNormalized = frenchLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const surahLower = surahName.toLowerCase();
       const surahNormalized = surahLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      // BASMALA SPECIAL CASE: 
+      // Most surahs (except Surah 9) start with Basmala, but it's often not in the text of verse 1
+      // unless it's Surah 1. Users expect "بسم الله" to find 114 surahs.
+      if (queryPlain === "بسم الله" || queryPlain === "بسم الله الرحمن الرحيم") {
+        if (v.verset === 1) return true;
+      }
 
       // PHRASE MATCH (Priority)
       if (queryRaw.includes(" ")) {
