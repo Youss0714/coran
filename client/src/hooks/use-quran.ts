@@ -42,30 +42,33 @@ export function useQuranSearch(query: string) {
       const frenchText = parts[1] || "";
       const surahName = parts[2] || "";
 
-      const normalizedQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const searchTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+      // Function to remove Arabic diacritics (tashkeel)
+      const removeTashkeel = (text: string) => {
+        return text.replace(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g, "");
+      };
 
+      const searchTerms = query.trim().split(/\s+/).filter(Boolean);
       const sourateStr = v.sourate.toString();
       const versetStr = v.verset.toString();
       
       return searchTerms.every(term => {
-        const termLower = term.toLowerCase();
-        const termNormalized = termLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const isNumeric = /^\d+$/.test(term);
-        
         if (isNumeric) {
           return sourateStr === term || versetStr === term;
         }
 
-        // Search in Arabic text (original), French text (normalized), and Surah Name
-        const arabicTextNormalized = arabicText.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const frenchTextNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const surahNameNormalized = surahName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        // Normalize term and texts for comparison
+        const termNormalized = term.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const termArabicPlain = removeTashkeel(term);
+
+        const arabicPlain = removeTashkeel(arabicText);
+        const frenchNormalized = frenchText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const surahNormalized = surahName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
         return arabicText.includes(term) || 
-               arabicTextNormalized.includes(termNormalized) ||
-               frenchTextNormalized.includes(termNormalized) ||
-               surahNameNormalized.includes(termNormalized);
+               arabicPlain.includes(termArabicPlain) ||
+               frenchNormalized.includes(termNormalized) ||
+               surahNormalized.includes(termNormalized);
       });
     });
   }, [allVersets, query]);
