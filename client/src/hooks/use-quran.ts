@@ -76,7 +76,7 @@ export function useQuranSearch(query: string) {
       if (queryPlain === "بسم الله" || queryPlain === "بسم الله الرحمن الرحيم") {
         if (v.verset === 1) return true;
         // Skip further matching for verse 1 to avoid double counting if phrase is also in text
-        return false; 
+        if (v.verset === 1) return false; 
       }
 
       // PHRASE MATCH (Priority)
